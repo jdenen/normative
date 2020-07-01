@@ -1,5 +1,6 @@
 defmodule Normative do
   @callback s() :: %Norm.Core.Schema{}
+  @callback new(map | keyword) :: {:ok, struct} | {:error, term}
 
   defmacro defdata(do: {:__block__, _, lines}) do
     write_ast(lines, __CALLER__.module)
@@ -16,6 +17,15 @@ defmodule Normative do
       import Norm
 
       @behaviour Normative
+
+      @impl true
+      def new(fields) do
+        struct!(__MODULE__, fields)
+        |> Norm.conform(__MODULE__.s())
+      catch
+        _kind, reason ->
+          {:error, reason}
+      end
     end
   end
 

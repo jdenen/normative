@@ -41,4 +41,18 @@ defmodule NormativeTest do
       assert {:error, _} = Norm.conform(%Test.B{a: "hi"}, schema)
     end
   end
+
+  describe "new/1" do
+    test "returns struct in OK tuple" do
+      assert {:ok, %Test.A{}} = Test.A.new(a: "hi")
+    end
+
+    test "returns error tuple if struct fails compilation" do
+      assert {:error, %ArgumentError{}} = Test.A.new(b: 1.0)
+    end
+
+    test "returns error tuple if struct fails Norm conformity" do
+      assert {:error, [%{input: 42, path: [:a], spec: "is_binary()"}]} = Test.A.new(a: 42)
+    end
+  end
 end
