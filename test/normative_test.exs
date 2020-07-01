@@ -38,6 +38,11 @@ defmodule NormativeTest do
       assert {:ok, _} = Norm.conform(%Test.B{a: %Test.Struct{a: "hi"}}, schema)
       assert {:error, _} = Norm.conform(%Test.B{a: "hi"}, schema)
     end
+
+    test "defines s/0 function with result of a function call as a schema" do
+      %Norm.Core.Schema{specs: %{a: schema}} = Test.C.s()
+      assert schema == Test.Struct.s()
+    end
   end
 
   describe "new/1" do

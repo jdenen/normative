@@ -1,7 +1,13 @@
 defmodule Test do
   defmodule Struct do
+    import Norm
+
     @type t :: %__MODULE__{a: String.t()}
     defstruct [:a]
+
+    def s do
+      schema(%__MODULE__{a: spec(is_binary)})
+    end
   end
 
   defmodule A do
@@ -18,6 +24,14 @@ defmodule Test do
 
     defdata do
       a(type: Struct.t(), schema: %Struct{a: spec(is_binary)})
+    end
+  end
+
+  defmodule C do
+    use Normative, version: [1, 2, 3]
+
+    defdata do
+      a(type: Struct.t(), schema: Struct.s())
     end
   end
 

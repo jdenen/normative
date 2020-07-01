@@ -85,6 +85,7 @@ defmodule Normative do
   defp parse_schema({name, _, [kwargs]}, acc) do
     case Keyword.get(kwargs, :schema) do
       nil -> acc
+      {{:., _, _}, _, _} = fun_call -> [{name, fun_call} | acc]
       val -> [{name, {:schema, [import: Norm], [val]}} | acc]
     end
   end
