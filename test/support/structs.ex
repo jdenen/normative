@@ -20,4 +20,16 @@ defmodule Test do
       a(type: Struct.t(), schema: %Struct{a: spec(is_binary)})
     end
   end
+
+  defmodule Migrate do
+    use Normative, version: 2
+
+    defdata do
+      a(type: String.t(), spec: is_binary)
+    end
+
+    def migrate(1, %{a: value}) do
+      struct(__MODULE__, a: to_string(value))
+    end
+  end
 end

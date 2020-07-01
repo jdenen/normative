@@ -1,6 +1,7 @@
 defmodule Normative do
   @callback s() :: %Norm.Core.Schema{}
   @callback new(map | keyword) :: {:ok, struct} | {:error, term}
+  @callback migrate(version :: term, struct) :: struct
 
   defmacro defdata(do: {:__block__, _, lines}) do
     write_ast(lines, __CALLER__.module)
@@ -19,13 +20,23 @@ defmodule Normative do
       import Norm
 
       @behaviour Normative
+      @before_compile Normative
       @version unquote(version)
 
       @impl true
       def new(fields) do
-        struct(__MODULE__, fields)
+        data = struct(__MODULE__, fields)
+
+        migrate(data.__vsn__, data)
         |> Norm.conform(__MODULE__.s())
       end
+    end
+  end
+
+  defmacro __before_compile__(_opts) do
+    quote do
+      @impl true
+      def migrate(_version, x), do: x
     end
   end
 

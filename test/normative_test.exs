@@ -53,4 +53,19 @@ defmodule NormativeTest do
       assert {:error, [%{input: 42, path: [:a], spec: "is_binary()"}]} = Test.A.new(a: 42)
     end
   end
+
+  describe "migrate/2" do
+    test "executes user-defined callback when version qualifies" do
+      assert {:ok, %Test.Migrate{__vsn__: 2, a: "42"}} = Test.Migrate.new(__vsn__: 1, a: 42)
+    end
+
+    test "passes through without version match" do
+      assert {:ok, %Test.Migrate{__vsn__: 3, a: "hi"}} = Test.Migrate.new(__vsn__: 3, a: "hi")
+    end
+
+    test "migrated data is conformed" do
+      assert {:error, [%{input: 42, path: [:a], spec: "is_binary()"}]} =
+               Test.Migrate.new(__vsn__: 3, a: 42)
+    end
+  end
 end
