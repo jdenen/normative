@@ -1,4 +1,6 @@
 defmodule Normative do
+  @callback s() :: %Norm.Core.Schema{}
+
   defmacro defdata(do: {:__block__, _, lines}) do
     write_ast(lines, __CALLER__.module)
   end
@@ -6,6 +8,15 @@ defmodule Normative do
   defmacro defdata(do: line) do
     List.wrap(line)
     |> write_ast(__CALLER__.module)
+  end
+
+  defmacro __using__(_) do
+    quote do
+      import Normative
+      import Norm
+
+      @behaviour Normative
+    end
   end
 
   defp write_ast(ast, mod) do
@@ -21,15 +32,18 @@ defmodule Normative do
     specs = Enum.reduce(ast, [], &spec_or_schema(&1, :spec, &2))
     schemas = Enum.reduce(ast, [], &spec_or_schema(&1, :schema, &2))
 
-    {:def, [],
-     [
-       {:s, [], Elixir},
+    [
+      {:@, [context: Elixir, import: Kernel], [{:impl, [], [true]}]},
+      {:def, [],
        [
-         do:
-           {:schema, [context: Elixir, import: Norm],
-            [{:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], specs ++ schemas}]}]}
-       ]
-     ]}
+         {:s, [], Elixir},
+         [
+           do:
+             {:schema, [context: Elixir, import: Norm],
+              [{:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], specs ++ schemas}]}]}
+         ]
+       ]}
+    ]
   end
 
   defp spec_or_schema({name, _, [kwargs]}, key, acc) do
@@ -68,12 +82,5 @@ defmodule Normative do
 
     {:@, [context: Elixir, import: Kernel],
      [{:type, [], [{:"::", [], [{:t, [], Elixir}, return_type]}]}]}
-  end
-
-  defmacro __using__(_) do
-    quote do
-      import Normative
-      import Norm
-    end
   end
 end
