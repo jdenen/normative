@@ -5,7 +5,7 @@ defmodule Test do
   end
 
   defmodule A do
-    use Normative
+    use Normative, version: 1
 
     defdata do
       a(type: String.t(), spec: is_binary)
@@ -14,7 +14,7 @@ defmodule Test do
   end
 
   defmodule B do
-    use Normative
+    use Normative, version: 0.1
 
     defdata do
       a(type: Struct.t(), schema: %Struct{a: spec(is_binary)})

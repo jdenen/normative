@@ -11,12 +11,15 @@ defmodule Normative do
     |> write_ast(__CALLER__.module)
   end
 
-  defmacro __using__(_) do
+  defmacro __using__(opts) do
+    version = Keyword.fetch!(opts, :version)
+
     quote do
       import Normative
       import Norm
 
       @behaviour Normative
+      @version unquote(version)
 
       @impl true
       def new(fields) do
@@ -74,6 +77,7 @@ defmodule Normative do
         default = Keyword.get(kwargs, :default)
         [{name, default} | acc]
       end)
+      |> Keyword.put_new(:__vsn__, {:@, [import: Kernel], [{:version, [], Elixir}]})
 
     {:defstruct, [context: Elixir, import: Kernel], [fields]}
   end

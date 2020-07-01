@@ -7,6 +7,10 @@ defmodule NormativeTest do
       assert %Test.A{} = %Test.A{a: "hi", b: 0.0}
     end
 
+    test "sets internal version field" do
+      assert %Test.A{__vsn__: 1} = %Test.A{a: "hi"}
+    end
+
     test "defines s/0 function for Norm conformity" do
       schema = Test.A.s()
 
@@ -38,7 +42,11 @@ defmodule NormativeTest do
 
   describe "new/1" do
     test "returns struct in OK tuple" do
-      assert {:ok, %Test.A{}} = Test.A.new(a: "hi")
+      assert {:ok, %Test.A{__vsn__: 1}} = Test.A.new(a: "hi")
+    end
+
+    test "allows internal version to be overwritten" do
+      assert {:ok, %Test.A{__vsn__: 42}} = Test.A.new(__vsn__: 42, a: "hi")
     end
 
     test "returns error tuple if struct fails Norm conformity" do
