@@ -56,27 +56,36 @@ defmodule Normative do
   end
 
   defp define_schema(ast, mod) do
-    specs = Enum.reduce(ast, [], &spec_or_schema(&1, :spec, &2))
-    schemas = Enum.reduce(ast, [], &spec_or_schema(&1, :schema, &2))
+    specs = Enum.reduce(ast, [], &parse_specs/2)
+    schemas = Enum.reduce(ast, [], &parse_schema/2)
 
     [
-      {:@, [context: Elixir, import: Kernel], [{:impl, [], [true]}]},
+      {:@, [import: Kernel], [{:impl, [], [true]}]},
       {:def, [],
        [
          {:s, [], Elixir},
          [
            do:
-             {:schema, [context: Elixir, import: Norm],
+             {:schema, [import: Norm],
               [{:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], specs ++ schemas}]}]}
          ]
        ]}
     ]
   end
 
-  defp spec_or_schema({name, _, [kwargs]}, key, acc) do
-    case Keyword.get(kwargs, key) do
+  defp parse_specs({name, _, [kwargs]}, acc) do
+    case Keyword.get(kwargs, :spec) do
       nil -> acc
-      val -> [{name, {key, [context: Elixir, import: Norm], [val]}} | acc]
+      {:one_of, _, _} = spec -> [{name, spec} | acc]
+      {:coll_of, _, _} = spec -> [{name, spec} | acc]
+      val -> [{name, {:spec, [import: Norm], [val]}} | acc]
+    end
+  end
+
+  defp parse_schema({name, _, [kwargs]}, acc) do
+    case Keyword.get(kwargs, :schema) do
+      nil -> acc
+      val -> [{name, {:schema, [import: Norm], [val]}} | acc]
     end
   end
 
@@ -96,7 +105,7 @@ defmodule Normative do
       end)
       |> Keyword.put_new(:__vsn__, {:@, [import: Kernel], [{:version, [], Elixir}]})
 
-    {:defstruct, [context: Elixir, import: Kernel], [fields]}
+    {:defstruct, [import: Kernel], [fields]}
   end
 
   defp type_spec(ast, mod) do
@@ -108,7 +117,6 @@ defmodule Normative do
 
     return_type = {:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], fields}]}
 
-    {:@, [context: Elixir, import: Kernel],
-     [{:type, [], [{:"::", [], [{:t, [], Elixir}, return_type]}]}]}
+    {:@, [import: Kernel], [{:type, [], [{:"::", [], [{:t, [], Elixir}, return_type]}]}]}
   end
 end

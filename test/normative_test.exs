@@ -52,6 +52,25 @@ defmodule NormativeTest do
     test "returns error tuple if struct fails Norm conformity" do
       assert {:error, [%{input: 42, path: [:a], spec: "is_binary()"}]} = Test.A.new(a: 42)
     end
+
+    test "conforms against a coll_of/1 spec" do
+      assert {:error, [%{input: 1, path: [:a, 0, 1], spec: "is_binary()"}]} =
+               Test.Collection.new(a: [one: 1])
+    end
+
+    test "conforms against a one_of/1 spec" do
+      expected_errors = [
+        %{input: "hi", path: [:b], spec: "is_integer()"},
+        %{input: "hi", path: [:b], spec: "is_float()"}
+      ]
+
+      assert {:error, ^expected_errors} = Test.Collection.new(b: "hi")
+    end
+
+    test "conforms against a coll_of/2 spec" do
+      assert {:error, [%{input: [1], path: [:c], spec: "min_count: 2"}]} =
+               Test.Collection.new(c: [1])
+    end
   end
 
   describe "migrate/2" do

@@ -39,12 +39,22 @@ defmodule Test do
     defdata do
       left(type: integer, spec: is_integer)
       right(type: integer, spec: is_integer)
-      operator(type: atom)
-      result(type: (integer | float), spec: (is_integer or is_float))
+      operator(type: atom, spec: one_of([:+, :-, :*, :/]))
+      result(type: integer | float, spec: is_integer or is_float)
     end
 
     def on_new(%{left: a, right: b, operator: :*} = data) do
       %{data | result: a * b}
+    end
+  end
+
+  defmodule Collection do
+    use Normative, version: "99"
+
+    defdata do
+      a(type: keyword, spec: coll_of({spec(is_atom), spec(is_binary)}), default: [one: "1"])
+      b(type: integer | float, spec: one_of([spec(is_integer), spec(is_float)]), default: 1.0)
+      c(type: [integer], spec: coll_of(spec(is_integer), min_count: 2), default: [1, 2, 3])
     end
   end
 end
