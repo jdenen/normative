@@ -2,6 +2,7 @@ defmodule Normative do
   @callback s() :: %Norm.Core.Schema{}
   @callback new(map | keyword) :: {:ok, struct} | {:error, term}
   @callback migrate(version :: term, struct) :: struct
+  @callback on_new(struct) :: struct
 
   defmacro defdata(do: {:__block__, _, lines}) do
     write_ast(lines, __CALLER__.module)
@@ -25,11 +26,16 @@ defmodule Normative do
 
       @impl true
       def new(fields) do
-        data = struct(__MODULE__, fields)
+        data = struct(__MODULE__, fields) |> on_new()
 
         migrate(data.__vsn__, data)
         |> Norm.conform(__MODULE__.s())
       end
+
+      @impl true
+      def on_new(struct), do: struct
+
+      defoverridable on_new: 1
     end
   end
 

@@ -32,4 +32,19 @@ defmodule Test do
       struct(__MODULE__, a: to_string(value))
     end
   end
+
+  defmodule Equation do
+    use Normative, version: V1
+
+    defdata do
+      left(type: integer, spec: is_integer)
+      right(type: integer, spec: is_integer)
+      operator(type: atom)
+      result(type: (integer | float), spec: (is_integer or is_float))
+    end
+
+    def on_new(%{left: a, right: b, operator: :*} = data) do
+      %{data | result: a * b}
+    end
+  end
 end

@@ -68,4 +68,17 @@ defmodule NormativeTest do
                Test.Migrate.new(__vsn__: 3, a: 42)
     end
   end
+
+  describe "on_new/1" do
+    test "executes callback after data is constructed" do
+      input = %{result: nil, left: 21, right: 2, operator: :*}
+      {:ok, %Test.Equation{result: 42}} = Test.Equation.new(input)
+    end
+
+    test "is overridable without fallback match" do
+      assert_raise FunctionClauseError, fn ->
+        Test.Equation.new(left: 21, right: 21, operator: :+)
+      end
+    end
+  end
 end
