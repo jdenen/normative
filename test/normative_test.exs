@@ -20,12 +20,6 @@ defmodule NormativeTest do
       assert %Test.A{b: 42.0} = %Test.A{a: "hi"}
     end
 
-    test "marks specific fields as required" do
-      assert_raise ArgumentError, fn ->
-        struct!(Test.A, b: 0.0)
-      end
-    end
-
     test "compiles with single line blocks" do
       assert %Test.B{} = %Test.B{a: "hi"}
     end
@@ -45,10 +39,6 @@ defmodule NormativeTest do
   describe "new/1" do
     test "returns struct in OK tuple" do
       assert {:ok, %Test.A{}} = Test.A.new(a: "hi")
-    end
-
-    test "returns error tuple if struct fails compilation" do
-      assert {:error, %ArgumentError{}} = Test.A.new(b: 1.0)
     end
 
     test "returns error tuple if struct fails Norm conformity" do

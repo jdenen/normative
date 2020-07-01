@@ -20,11 +20,8 @@ defmodule Normative do
 
       @impl true
       def new(fields) do
-        struct!(__MODULE__, fields)
+        struct(__MODULE__, fields)
         |> Norm.conform(__MODULE__.s())
-      catch
-        _kind, reason ->
-          {:error, reason}
       end
     end
   end

@@ -8,7 +8,7 @@ defmodule Test do
     use Normative
 
     defdata do
-      a(type: String.t(), spec: is_binary, required: true)
+      a(type: String.t(), spec: is_binary)
       b(type: float(), default: 42.0)
     end
   end
