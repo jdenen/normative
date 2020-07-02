@@ -1,4 +1,8 @@
 defmodule Test do
+  def empty?(""), do: true
+  def empty?([]), do: true
+  def empty?(_), do: false
+
   defmodule Struct do
     import Norm
 
@@ -16,6 +20,7 @@ defmodule Test do
     defdata do
       a(type: String.t(), spec: is_binary)
       b(type: float(), default: 42.0)
+      c(type: String.t(), spec: Test.empty?(), default: "")
     end
   end
 
