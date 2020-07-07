@@ -11,6 +11,12 @@ defmodule NormativeTest do
       assert %Test.A{__vsn__: 1} = %Test.A{a: "hi"}
     end
 
+    test "supports required fields" do
+      assert_raise ArgumentError, fn ->
+        struct!(Test.Required, %{})
+      end
+    end
+
     test "defines s/0 function for Norm conformity" do
       schema = Test.A.s()
 

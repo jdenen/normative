@@ -40,6 +40,14 @@ defmodule Test do
     end
   end
 
+  defmodule Required do
+    use Normative
+
+    defdata do
+      a(type: String.t(), spec: is_binary, required: true)
+    end
+  end
+
   defmodule Migrate do
     use Normative, version: 2
 

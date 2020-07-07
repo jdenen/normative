@@ -14,7 +14,7 @@ defmodule Normative do
   end
 
   defmacro __using__(opts) do
-    version = Keyword.fetch!(opts, :version)
+    version = Keyword.get(opts, :version, :ignore)
 
     quote do
       import Normative
@@ -58,19 +58,14 @@ defmodule Normative do
   defp define_schema(ast, mod) do
     specs = Enum.reduce(ast, [], &parse_specs/2)
     schemas = Enum.reduce(ast, [], &parse_schema/2)
+    mod_schema = {:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], specs ++ schemas}]}
 
-    [
-      {:@, [import: Kernel], [{:impl, [], [true]}]},
-      {:def, [],
-       [
-         {:s, [], Elixir},
-         [
-           do:
-             {:schema, [import: Norm],
-              [{:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], specs ++ schemas}]}]}
-         ]
-       ]}
-    ]
+    quote do
+      @impl true
+      def s do
+        schema(unquote(mod_schema))
+      end
+    end
   end
 
   defp parse_specs({name, _, [kwargs]}, acc) do
@@ -95,7 +90,9 @@ defmodule Normative do
       Enum.filter(ast, fn {_, _, [kwargs]} -> Keyword.get(kwargs, :required) end)
       |> Enum.map(&elem(&1, 0))
 
-    {:@, [], [{:enforce_keys, [], [required]}]}
+    quote do
+      @enforce_keys unquote(required)
+    end
   end
 
   defp struct_definition(ast) do
@@ -106,7 +103,9 @@ defmodule Normative do
       end)
       |> Keyword.put_new(:__vsn__, {:@, [import: Kernel], [{:version, [], Elixir}]})
 
-    {:defstruct, [import: Kernel], [fields]}
+    quote do
+      defstruct unquote(fields)
+    end
   end
 
   defp type_spec(ast, mod) do
@@ -118,6 +117,8 @@ defmodule Normative do
 
     return_type = {:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], fields}]}
 
-    {:@, [import: Kernel], [{:type, [], [{:"::", [], [{:t, [], Elixir}, return_type]}]}]}
+    quote do
+      @type t :: unquote(return_type)
+    end
   end
 end
